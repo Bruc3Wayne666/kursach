@@ -67,7 +67,17 @@ const Question = sequelize.define('Question', {
     correct_answer: {
         type: DataTypes.BOOLEAN,
         allowNull: false
+    },
+
+    PsychotypeId: {  // Добавьте это поле
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Psychotype,
+            key: 'id'
+        }
     }
+
 }, {
     tableName: 'questions',
     timestamps: true
@@ -106,6 +116,39 @@ const Result = sequelize.define('Result', {
     timestamps: true
 });
 
+const Report = sequelize.define('Report', {
+    content: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    UserId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: User,
+            key: 'id'
+        }
+    },
+    TestId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Test,
+            key: 'id'
+        }
+    }
+}, {
+    tableName: 'reports',
+    timestamps: true
+});
+
+// Установление связей между моделями
+User.hasMany(Report);
+Test.hasMany(Report);
+Report.belongsTo(User);
+Report.belongsTo(Test);
+
+
 
 // Установление связей между моделями
 User.hasMany(Result);
@@ -117,6 +160,11 @@ Result.belongsTo(User);
 Result.belongsTo(Test);
 Result.belongsTo(Question);
 Question.belongsTo(Psychotype);
+
+// В модели TestQuestion
+TestQuestion.belongsTo(Question, { foreignKey: 'questionId' });
+Question.hasMany(TestQuestion, { foreignKey: 'questionId' });
+
 
 // В модели Test
 Test.belongsToMany(Question, {
@@ -134,5 +182,5 @@ Question.belongsToMany(Test, {
 
 
 module.exports = {
-    User, Test, Psychotype, Question, Result, TestQuestion, sequelize
+    User, Test, Psychotype, Question, Result, TestQuestion, Report, sequelize
 }
