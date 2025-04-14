@@ -1,0 +1,38 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('user', 'admin'))
+);
+
+CREATE TABLE tests (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    type TEXT NOT NULL CHECK (type IN ('small', 'large')),
+    description TEXT
+);
+
+CREATE TABLE psychotypes (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE questions (
+    id SERIAL PRIMARY KEY,                              -- Уникальный идентификатор вопроса
+    question TEXT NOT NULL,                             -- Текст вопроса
+    correct_answer BOOLEAN NOT NULL,                    -- Правильный ответ: TRUE для "ДА", FALSE для "НЕТ"
+    psychotype_id INTEGER REFERENCES psychotypes(id)    -- Идентификатор психотипа
+);
+
+CREATE TABLE results (
+    id SERIAL PRIMARY KEY,                              -- Уникальный идентификатор результата
+    test_id INTEGER REFERENCES tests(id),              -- Идентификатор теста
+    question_id INTEGER REFERENCES questions(id),       -- Идентификатор вопроса
+    user_id INTEGER REFERENCES users(id),              -- Идентификатор пользователя
+    user_answer BOOLEAN NOT NULL,                       -- Ответ пользователя: TRUE или FALSE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP      -- Дата и время прохождения теста
+);
+
+
+
