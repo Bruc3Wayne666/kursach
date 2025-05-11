@@ -3,9 +3,12 @@ import './index.css'
 import App from './components/App.tsx'
 import store from "./redux/store.ts";
 import {Provider} from 'react-redux'
+import {ConfigProvider} from "antd";
 
 createRoot(document.getElementById('root')!).render(
     <Provider store={store}>
-        <App/>
+        <ConfigProvider>
+            <App/>
+        </ConfigProvider>
     </Provider>
 )

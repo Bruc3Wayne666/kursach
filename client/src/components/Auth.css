@@ -1,0 +1,53 @@
+/* Auth.css */
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: #f0f4f8; /* Светлый фон */
+    font-family: Arial, sans-serif; /* Шрифт */
+}
+
+h1 {
+    color: #333; /* Цвет заголовка */
+    margin-bottom: 20px; /* Отступ снизу */
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Отступ между полями ввода */
+    width: 300px; /* Ширина формы */
+}
+
+.auth-input {
+    padding: 10px; /* Отступы внутри поля */
+    border: 1px solid #ccc; /* Рамка поля */
+    border-radius: 5px; /* Скругление углов */
+}
+
+.auth-button {
+    padding: 10px; /* Отступы внутри кнопки */
+    font-size: 16px; /* Размер шрифта */
+    color: white; /* Цвет текста */
+    background-color: #007bff; /* Цвет фона кнопки */
+    border: none; /* Убираем рамку */
+    border-radius: 5px; /* Скругление углов */
+    cursor: pointer; /* Курсор при наведении */
+    transition: background-color 0.3s; /* Плавный переход цвета */
+}
+
+.auth-button:hover {
+    background-color: #0056b3; /* Цвет кнопки при наведении */
+}
+
+.toggle-button {
+    margin-top: 10px; /* Отступ сверху */
+    background: none; /* Убираем фон */
+    border: none; /* Убираем рамку */
+    color: #007bff; /* Цвет текста */
+    cursor: pointer; /* Курсор при наведении */
+    text-decoration: underline; /* Подчеркивание текста */
+}

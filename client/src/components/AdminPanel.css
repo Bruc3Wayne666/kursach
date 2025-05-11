@@ -1,0 +1,37 @@
+/* AdminPanel.css */
+.admin-panel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: #f0f4f8; /* Светлый фон */
+    font-family: Arial, sans-serif; /* Шрифт */
+}
+
+h2 {
+    color: #333; /* Цвет заголовка */
+    margin-bottom: 20px; /* Отступ снизу */
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column; /* Вертикальное расположение кнопок */
+    gap: 15px; /* Отступ между кнопками */
+}
+
+.admin-button {
+    padding: 10px 20px; /* Отступы внутри кнопки */
+    font-size: 16px; /* Размер шрифта */
+    color: white; /* Цвет текста */
+    background-color: #007bff; /* Цвет фона кнопки */
+    border: none; /* Убираем рамку */
+    border-radius: 5px; /* Скругление углов */
+    cursor: pointer; /* Курсор при наведении */
+    transition: background-color 0.3s; /* Плавный переход цвета */
+}
+
+.admin-button:hover {
+    background-color: #0056b3; /* Цвет кнопки при наведении */
+}

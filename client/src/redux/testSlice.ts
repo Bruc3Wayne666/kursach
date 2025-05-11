@@ -1,5 +1,5 @@
 // features/tests/testSlice.ts
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import axios from 'axios';
 
 interface Test {
@@ -14,7 +14,6 @@ interface Question {
     id: number;
     question: string;
     correct_answer: string;
-    // Add other relevant fields as needed
 }
 
 interface TestsState {
@@ -23,6 +22,7 @@ interface TestsState {
     error: string | null;
     test: Test | null; // To store fetched test details
     questions: Question[]; // To store fetched questions
+    report: string | null; // To store fetched report
 }
 
 const initialState: TestsState = {
@@ -30,7 +30,8 @@ const initialState: TestsState = {
     loading: false,
     error: null,
     test: null,
-    questions: [], // Initialize questions state
+    questions: [],
+    report: null, // Initialize report state
 };
 
 // Асинхронное действие для получения тестов
@@ -63,6 +64,11 @@ export const submitTestResults = createAsyncThunk('tests/submitTestResults', asy
     return response.data; // Return the response data if needed
 });
 
+// Асинхронное действие для получения отчета
+export const fetchReport = createAsyncThunk('tests/fetchReport', async (testId: string) => {
+    const response = await axios.get(`http://localhost:3000/reports/${testId}`); // Замените на ваш реальный URL
+    return response.data; // Предполагается, что ответ содержит текст отчета
+});
 
 const testSlice = createSlice({
     name: 'tests',
@@ -112,13 +118,24 @@ const testSlice = createSlice({
             })
             .addCase(submitTestResults.fulfilled, (state, action) => {
                 state.loading = false;
-                // You can handle any state updates here if needed, like resetting userAnswers
+                state.report = action.payload; // Сохраняем полученный отчет
             })
             .addCase(submitTestResults.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.error.message || 'Ошибка при сохранении результатов';
-            });
-
+                state.error = action.error.message || 'Ошибка при отправке результатов теста';
+            })
+            // .addCase(fetchReport.pending, (state) => {
+            //     state.loading = true;
+            //     state.error = null;
+            // })
+            // .addCase(fetchReport.fulfilled, (state, action) => {
+            //     state.loading = false;
+            //     state.report = action.payload; // Сохраняем полученный отчет
+            // })
+            // .addCase(fetchReport.rejected, (state, action) => {
+            //     state.loading = false;
+            //     state.error = action.error.message || 'Ошибка при получении отчета';
+            // });
     },
 });
 

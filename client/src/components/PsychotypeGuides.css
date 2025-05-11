@@ -1,0 +1,21 @@
+.psychotype-guides-container {
+    background-color: white;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.psychotype-card {
+    height: 100%;
+    box-shadow: 0 3px 4px rgba(0, 0, 0, 2);
+    transition: transform 0.3s;
+}
+
+.psychotype-card:hover {
+    transform: translateY(-5px);
+}
+
+.psychotype-card .ant-card-head-title {
+    font-weight: 500;
+    color: #1890ff;
+}
