@@ -1,37 +1,60 @@
-/* AdminPanel.css */
-.admin-panel-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
+.admin-layout {
+    min-height: 100vh;
+    background: #f0f2f5;
     width: 100vw;
-    background-color: #f0f4f8; /* Светлый фон */
-    font-family: Arial, sans-serif; /* Шрифт */
 }
 
-h2 {
-    color: #333; /* Цвет заголовка */
-    margin-bottom: 20px; /* Отступ снизу */
-}
-
-.button-container {
+.admin-header {
     display: flex;
-    flex-direction: column; /* Вертикальное расположение кнопок */
-    gap: 15px; /* Отступ между кнопками */
+    align-items: center;
+    padding: 0 24px;
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.admin-button {
-    padding: 10px 20px; /* Отступы внутри кнопки */
-    font-size: 16px; /* Размер шрифта */
-    color: white; /* Цвет текста */
-    background-color: #007bff; /* Цвет фона кнопки */
-    border: none; /* Убираем рамку */
-    border-radius: 5px; /* Скругление углов */
-    cursor: pointer; /* Курсор при наведении */
-    transition: background-color 0.3s; /* Плавный переход цвета */
+.admin-content {
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-.admin-button:hover {
-    background-color: #0056b3; /* Цвет кнопки при наведении */
+.loading-container,
+.error-container,
+.empty-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+.summary-stats .ant-card {
+    margin-bottom: 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.feature-cards .ant-card {
+    transition: all 0.3s;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+
+.feature-cards .ant-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ant-divider-with-text-left .anticon {
+    margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+    .admin-content {
+        padding: 16px;
+    }
+
+    .summary-stats .ant-col,
+    .feature-cards .ant-col {
+        margin-bottom: 16px;
+    }
 }

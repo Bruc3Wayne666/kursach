@@ -106,7 +106,7 @@ const ReportsPage: React.FC = () => {
                                 </Text>
 
                                 <div className="report-actions">
-                                    <Link to={`/report/${report.id}`} state={{ report }}>
+                                    <Link to={`/report/${report.id}`}>
                                         <Button
                                             type="primary"
                                             icon={<ArrowRightOutlined />}

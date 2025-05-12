@@ -1,89 +1,139 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { addQuestionAsync } from '../redux/questionSlice';
-import './AddQuestion.css'; // Import the CSS file
+import {
+    Form,
+    Input,
+    Select,
+    Button,
+    Card,
+    Typography,
+    message,
+    Divider
+} from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import './AddQuestion.css';
+
+const { Title } = Typography;
+const { Option } = Select;
+const { TextArea } = Input;
+
+const PSYCHOTYPE_OPTIONS = [
+    'ПАРАНОИК',
+    'ЭПИЛЕПТОИД',
+    'ГИПЕРТИМ',
+    'ИСТЕРОИД',
+    'ШИЗОИД',
+    'ПСИХАСТЕНОИД',
+    'СЕНЗИТИВ',
+    'ГИПОТИМ',
+    'КОНФОРМНЫЙ',
+    'НЕУСТОЙЧИВЫЙ',
+    'АСТЕНИК',
+    'ЛАБИЛЬНЫЙ',
+    'ЦИКЛОИД'
+];
 
 const AddQuestion: React.FC = () => {
-    const [topic, setTopic] = useState('');
-    const [questionText, setQuestionText] = useState('');
-    const [correctAnswer, setCorrectAnswer] = useState('');
-
+    const [form] = Form.useForm();
     const dispatch = useDispatch();
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const newQuestion = {
-            topic,
-            questionText,
-            correctAnswer: correctAnswer === 'ДА',
-        };
-
+    const handleSubmit = async (values: any) => {
         try {
-            await dispatch(addQuestionAsync(newQuestion));
-            alert('Вопрос успешно создан!');
-            setTopic('');
-            setQuestionText('');
-            setCorrectAnswer('');
+            setLoading(true);
+            await dispatch(addQuestionAsync({
+                topic: values.topic,
+                questionText: values.questionText,
+                correctAnswer: values.correctAnswer === 'ДА'
+            }));
+
+            form.resetFields();
+            message.success('Вопрос успешно добавлен!');
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Не удалось создать вопрос. Попробуйте еще раз.');
+            message.error('Не удалось добавить вопрос');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="add-question-container">
-            <h1>Создание нового вопроса</h1>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="topic">Тематика</label>
-                    <select
-                        id="topic"
-                        value={topic}
-                        onChange={(e) => setTopic(e.target.value)}
-                        required
+            <Card className="add-question-card">
+                <Title level={3} className="page-title">
+                    <PlusOutlined /> Добавить новый вопрос
+                </Title>
+
+                <Divider />
+
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={handleSubmit}
+                    className="question-form"
+                >
+                    <Form.Item
+                        name="topic"
+                        label="Тематика вопроса"
+                        rules={[{ required: true, message: 'Выберите тематику' }]}
                     >
-                        <option value="">Выберите тематику</option>
-                        <option value="ПАРАНОИК">ПАРАНОИК</option>
-                        <option value="ЭПИЛЕПТОИД">ЭПИЛЕПТОИД</option>
-                        <option value="ГИПЕРТИМ">ГИПЕРТИМ</option>
-                        <option value="ИСТЕРОИД">ИСТЕРОИД</option>
-                        <option value="ШИЗОИД">ШИЗОИД</option>
-                        <option value="ПСИХАСТЕНОИД">ПСИХАСТЕНОИД</option>
-                        <option value="СЕНЗИТИВ">СЕНЗИТИВ</option>
-                        <option value="ГИПОТИМ">ГИПОТИМ</option>
-                        <option value="КОНФОРМНЫЙ ТИП">КОНФОРМНЫЙ ТИП</option>
-                        <option value="НЕУСТОЙЧИВЫЙ ТИП">НЕУСТОЙЧИВЫЙ ТИП</option>
-                        <option value="АСТЕНИК">АСТЕНИК</option>
-                        <option value="ЛАБИЛЬНЫЙ ТИП">ЛАБИЛЬНЫЙ ТИП</option>
-                        <option value="ЦИКЛОИД">ЦИКЛОИД</option>
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label htmlFor="questionText">Текст вопроса</label>
-                    <input
-                        id="questionText"
-                        type="text"
-                        placeholder="Введите текст вопроса"
-                        value={questionText}
-                        onChange={(e) => setQuestionText(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="correctAnswer">Правильный ответ</label>
-                    <select
-                        id="correctAnswer"
-                        value={correctAnswer}
-                        onChange={(e) => setCorrectAnswer(e.target.value)}
-                        required
+                        <Select
+                            placeholder="Выберите психотип"
+                            showSearch
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                                option?.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                        >
+                            {PSYCHOTYPE_OPTIONS.map(psychotype => (
+                                <Option key={psychotype} value={psychotype}>
+                                    {psychotype}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                        name="questionText"
+                        label="Текст вопроса"
+                        rules={[
+                            { required: true, message: 'Введите текст вопроса' },
+                            { min: 10, message: 'Минимум 10 символов' }
+                        ]}
                     >
-                        <option value="">Выберите правильный ответ</option>
-                        <option value="ДА">ДА</option>
-                        <option value="НЕТ">НЕТ</option>
-                    </select>
-                </div>
-                <button type="submit">Добавить вопрос</button>
-            </form>
+                        <TextArea
+                            rows={4}
+                            placeholder="Введите полный текст вопроса"
+                            maxLength={500}
+                            showCount
+                        />
+                    </Form.Item>
+
+                    <Form.Item
+                        name="correctAnswer"
+                        label="Правильный ответ"
+                        rules={[{ required: true, message: 'Выберите правильный ответ' }]}
+                    >
+                        <Select placeholder="Выберите вариант ответа">
+                            <Option value="ДА">ДА</Option>
+                            <Option value="НЕТ">НЕТ</Option>
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item>
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            loading={loading}
+                            icon={<PlusOutlined />}
+                            size="large"
+                        >
+                            Добавить вопрос
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Card>
         </div>
     );
 };

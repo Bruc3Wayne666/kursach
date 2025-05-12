@@ -2,16 +2,39 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createTest } from '../redux/testSlice';
 import { fetchQuestionsAsync } from '../redux/questionSlice';
+import {
+    Card,
+    Form,
+    Input,
+    Select,
+    Button,
+    Spin,
+    Alert,
+    Table,
+    Tag,
+    Divider,
+    Typography,
+    Checkbox,
+    Row,
+    Col
+} from 'antd';
+import {
+    PlusOutlined,
+    FilterOutlined
+} from '@ant-design/icons';
 import './CreateTest.css';
+
+const { Title, Text } = Typography;
+const { Option } = Select;
+const { TextArea } = Input;
 
 const CreateTest = () => {
     const dispatch = useDispatch();
     const { questions, loading, error } = useSelector((state: any) => state.questions);
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [type, setType] = useState('');
+    const [form] = Form.useForm();
     const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
     const [selectedPsychotype, setSelectedPsychotype] = useState<number | null>(null);
+    const [searchText, setSearchText] = useState('');
 
     const psychotypeNames: { [key: number]: string } = {
         1: 'ПАРАНОИК',
@@ -22,10 +45,10 @@ const CreateTest = () => {
         6: 'ПСИХАСТЕНОИД',
         7: 'СЕНЗИТИВ',
         8: 'ГИПОТИМ',
-        9: 'КОНФОРМНЫЙ ТИП',
-        10: 'НЕУСТОЙЧИВЫЙ ТИП',
+        9: 'КОНФОРМНЫЙ',
+        10: 'НЕУСТОЙЧИВЫЙ',
         11: 'АСТЕНИК',
-        12: 'ЛАБИЛЬНЫЙ ТИП',
+        12: 'ЛАБИЛЬНЫЙ',
         16: 'ЦИКЛОИД'
     };
 
@@ -33,135 +56,193 @@ const CreateTest = () => {
         dispatch(fetchQuestionsAsync());
     }, [dispatch]);
 
-    const handleQuestionToggle = (questionId: number) => {
-        setSelectedQuestions((prev) =>
-            prev.includes(questionId) ? prev.filter((id) => id !== questionId) : [...prev, questionId]
-        );
-    };
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = (values: any) => {
         const newTest = {
-            title,
-            description,
+            ...values,
             questionIds: selectedQuestions,
-            type,
         };
         dispatch(createTest(newTest));
-        // Reset form
-        setTitle('');
-        setDescription('');
-        setType('');
+        form.resetFields();
         setSelectedQuestions([]);
         setSelectedPsychotype(null);
     };
 
-    // Группировка вопросов по PsychotypeId
-    const groupedQuestions = questions.reduce((acc: { [key: number]: any[] }, question: any) => {
-        const psychotypeId = question.PsychotypeId;
-        if (!acc[psychotypeId]) {
-            acc[psychotypeId] = [];
-        }
-        acc[psychotypeId].push(question);
-        return acc;
-    }, {});
+    const filteredQuestions = questions
+        .filter((q: any) =>
+            (selectedPsychotype === null || q.PsychotypeId === selectedPsychotype) &&
+            (q.question.toLowerCase().includes(searchText.toLowerCase()) ||
+                String(q.id).includes(searchText))
+        )
+        .sort((a: any, b: any) => a.PsychotypeId - b.PsychotypeId);
 
-    // Получаем список всех психотипов для фильтра
-    const psychotypeList = Object.keys(groupedQuestions)
-        .map(Number)
-        .sort((a, b) => a - b);
+    const columns = [
+        {
+            title: 'Выбрать',
+            dataIndex: 'id',
+            width: 80,
+            render: (id: number) => (
+                <Checkbox
+                    checked={selectedQuestions.includes(id)}
+                    onChange={() => {
+                        setSelectedQuestions(prev =>
+                            prev.includes(id)
+                                ? prev.filter(qId => qId !== id)
+                                : [...prev, id]
+                        );
+                    }}
+                />
+            ),
+        },
+        {
+            title: 'Вопрос',
+            dataIndex: 'question',
+            render: (text: string, record: any) => (
+                <div>
+                    <Text strong>{text}</Text>
+                    {record.description && (
+                        <div style={{ marginTop: 4 }}>
+                            <Text type="secondary">{record.description}</Text>
+                        </div>
+                    )}
+                </div>
+            ),
+        },
+        {
+            title: 'Психотип',
+            dataIndex: 'PsychotypeId',
+            width: 150,
+            render: (id: number) => (
+                <Tag color={getPsychotypeColor(id)}>
+                    {psychotypeNames[id] || `Тип ${id}`}
+                </Tag>
+            ),
+            filters: Object.entries(psychotypeNames).map(([id, name]) => ({
+                text: name,
+                value: id,
+            })),
+            onFilter: (value: any, record: any) => record.PsychotypeId === Number(value),
+        },
+    ];
+
+    const getPsychotypeColor = (id: number) => {
+        const colors = [
+            '#ff4d4f', '#13c2c2', '#1890ff', '#722ed1',
+            '#fa8c16', '#52c41a', '#eb2f96', '#faad14',
+            '#2f54eb', '#a0d911', '#f5222d', '#adc6ff'
+        ];
+        return colors[id % colors.length];
+    };
 
     return (
         <div className="create-test-container">
-            <h1>Создать тест</h1>
-            {loading && <p className="loading">Загрузка вопросов...</p>}
-            {error && <p className="error">Ошибка: {error}</p>}
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label htmlFor="title">Название теста:</label>
-                    <input
-                        id="title"
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        required
-                        placeholder="Введите название теста"
+            <Card
+                title={<Title level={3}>Создание нового теста</Title>}
+                className="main-card"
+            >
+                {loading && (
+                    <div className="loading-overlay">
+                        <Spin tip="Загрузка вопросов..." size="large" />
+                    </div>
+                )}
+
+                {error && (
+                    <Alert
+                        message="Ошибка загрузки"
+                        description={error}
+                        type="error"
+                        showIcon
+                        style={{ marginBottom: 24 }}
                     />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="description">Описание теста:</label>
-                    <textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                        placeholder="Введите описание теста"
+                )}
+
+                <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={handleSubmit}
+                >
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                name="title"
+                                label="Название теста"
+                                rules={[{ required: true, message: 'Введите название' }]}
+                            >
+                                <Input placeholder="Название теста" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="type"
+                                label="Тип теста"
+                                rules={[{ required: true, message: 'Выберите тип' }]}
+                            >
+                                <Select placeholder="Тип теста">
+                                    <Option value="small">Короткий (10-15 вопросов)</Option>
+                                    <Option value="large">Полный (30+ вопросов)</Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Form.Item
+                        name="description"
+                        label="Описание теста"
+                        rules={[{ required: true, message: 'Введите описание' }]}
+                    >
+                        <TextArea rows={3} placeholder="Описание теста" />
+                    </Form.Item>
+
+                    <Divider orientation="left">
+                        <FilterOutlined /> Выбор вопросов ({selectedQuestions.length} выбрано)
+                    </Divider>
+
+                    <div className="questions-controls">
+                        <Input.Search
+                            placeholder="Поиск по вопросам"
+                            allowClear
+                            onChange={(e) => setSearchText(e.target.value)}
+                            style={{ width: 300, marginBottom: 16 }}
+                        />
+
+                        <Select
+                            placeholder="Фильтр по психотипу"
+                            allowClear
+                            onChange={(value) => setSelectedPsychotype(value)}
+                            style={{ width: 200, marginLeft: 16 }}
+                        >
+                            {Object.entries(psychotypeNames).map(([id, name]) => (
+                                <Option key={id} value={Number(id)}>
+                                    {name}
+                                </Option>
+                            ))}
+                        </Select>
+                    </div>
+
+                    <Table
+                        columns={columns}
+                        dataSource={filteredQuestions}
+                        rowKey="id"
+                        pagination={{ pageSize: 10 }}
+                        size="middle"
+                        rowClassName={(record) =>
+                            selectedQuestions.includes(record.id) ? 'selected-row' : ''
+                        }
+                        scroll={{ y: 400 }}
                     />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="type">Тип теста:</label>
-                    <select
-                        id="type"
-                        value={type}
-                        onChange={(e) => setType(e.target.value)}
-                        required
-                    >
-                        <option value="">Выберите тип теста</option>
-                        <option value="small">small</option>
-                        <option value="large">large</option>
-                    </select>
-                </div>
 
-                <div className="form-group">
-                    <label htmlFor="psychotype-filter">Фильтр по психотипу:</label>
-                    <select
-                        id="psychotype-filter"
-                        value={selectedPsychotype || ''}
-                        onChange={(e) => setSelectedPsychotype(e.target.value ? Number(e.target.value) : null)}
-                    >
-                        <option value="">Все психотипы</option>
-                        {psychotypeList.map((psychotypeId) => (
-                            <option key={psychotypeId} value={psychotypeId}>
-                                {psychotypeNames[psychotypeId] || `Психотип ${psychotypeId}`}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="form-group questions-list">
-                    <label>Выберите вопросы:</label>
-                    {Object.keys(groupedQuestions).length === 0 && !loading && (
-                        <p>Вопросы не найдены.</p>
-                    )}
-
-                    {psychotypeList
-                        .filter(psychotypeId =>
-                            selectedPsychotype === null || psychotypeId === selectedPsychotype
-                        )
-                        .map((psychotypeId) => (
-                            <div key={psychotypeId} className="psychotype-section">
-                                <h3>
-                                    {groupedQuestions[psychotypeId][0]?.psychotype?.name ||
-                                        psychotypeNames[psychotypeId] ||
-                                        `Психотип ${psychotypeId}`}
-                                </h3>
-                                <ul>
-                                    {groupedQuestions[psychotypeId].map((question: any) => (
-                                        <li
-                                            key={question.id}
-                                            onClick={() => handleQuestionToggle(question.id)}
-                                            className={selectedQuestions.includes(question.id) ? 'selected' : ''}
-                                        >
-                                            {question.question}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))}
-                </div>
-
-                <button type="submit">Создать тест</button>
-            </form>
+                    <Form.Item style={{ marginTop: 24 }}>
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            icon={<PlusOutlined />}
+                            size="large"
+                            disabled={selectedQuestions.length === 0}
+                        >
+                            Создать тест
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Card>
         </div>
     );
 };
